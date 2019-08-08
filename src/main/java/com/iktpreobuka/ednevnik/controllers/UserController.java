@@ -1,50 +1,78 @@
 package com.iktpreobuka.ednevnik.controllers;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.iktpreobuka.ednevnik.entities.RoleEntity;
 import com.iktpreobuka.ednevnik.entities.UserEntity;
+import com.iktpreobuka.ednevnik.repositories.UserRepository;
+import com.iktpreobuka.ednevnik.util.UserCustomValidator;
 
 
-@Controller
+
+@RestController
+@RequestMapping(path = "/users")
 public class UserController {
-	 public List<UserEntity> getDummyDB() { 
-		 List<UserEntity> list = new
-	 ArrayList<>();
-	 
-	 RoleEntity adm = new RoleEntity(); adm.setId(1); adm.setName("admin");
-	 RoleEntity stud = new RoleEntity(); stud.setId(2); stud.setName("student");
-	 RoleEntity prof = new RoleEntity(); prof.setId(3); prof.setName("teacher");
-	 RoleEntity rod = new RoleEntity(); rod.setId(4); rod.setName("parent");
-	 
-	 UserEntity u1 = new UserEntity(); u1.setName("jova");
-	 u1.setLastName("jovic"); u1.setUsername("voja"); u1.setPassword("123");
-	 u1.setEmail("jova@jova.com"); u1.setRole(adm);
-	 
-	 UserEntity u2 = new UserEntity(); u2.setName("jona"); u2.setLastName("jon");
-	 u2.setUsername("von"); u2.setPassword("123"); u2.setEmail("jon@jon.com");
-	 u2.setRole(prof);
-	 
-	 UserEntity u3 = new UserEntity(); u3.setName("java");
-	 u3.setLastName("javic"); u3.setUsername("java"); u3.setPassword("123");
-	 u3.setEmail("java@java.com"); u3.setRole(stud);
-	 
-	 list.add(u1); list.add(u2); list.add(u3);
-	 
-	 return list;
-	 }
-	 
-	@Secured("ROLE_ADMIN")
-	@RequestMapping(path = "/users", method = RequestMethod.GET)
-	public ResponseEntity<?> listUsers() {
-		return new ResponseEntity<List<UserEntity>>(getDummyDB(), HttpStatus.OK);
+	
+	@Autowired
+	private UserRepository userRepository;
+	
+	@Autowired
+	UserCustomValidator userValidator;
+	
+	@InitBinder
+	protected void initBinder(final WebDataBinder binder) {
+		binder.addValidators(userValidator);
 	}
+	
+	
+	@RequestMapping(method=RequestMethod.POST)
+	public ResponseEntity<?> addNewUser(@Valid @RequestBody UserEntity newUser, BindingResult result){
+	if(result.hasErrors()){
+		return new ResponseEntity<>(createErrorMessage(result), HttpStatus.BAD_REQUEST);
+	} else {
+			userValidator.validate(newUser, result);
+	}
+		userRepository.save(newUser);
+		UserEntity user = new UserEntity();
+		user.setUserId(newUser.getUserId());
+		user.setName(newUser.getName());
+		user.setLastName(newUser.getLastName());
+		user.setUsername(newUser.getUsername());
+		user.setEmail(newUser.getEmail());
+		user.setPassword(newUser.getPassword());
+		
+		userRepository.save(user);
+		
+		return new ResponseEntity<>(newUser,HttpStatus.OK);
+	
+	}
+
+	private String createErrorMessage(BindingResult result) {
+		return result.getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(" "));
+	}
+	
+	
+	@Secured("ROLE_ADMIN")
+	@RequestMapping(path = "/all", method = RequestMethod.GET)
+	public Iterable<UserEntity> getAllUsers() {
+	return userRepository.findAll();
+	}
+	
+	
+	
+	
 }
