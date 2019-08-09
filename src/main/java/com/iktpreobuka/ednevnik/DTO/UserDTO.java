@@ -8,7 +8,7 @@ import javax.validation.constraints.Size;
 public class UserDTO {
 	@NotNull(message="must be filled")
 	@Size(min=2, max=30, message="must be within {min} and {max} number of characters")
-	private String firstName;
+	private String name;
 	@NotNull(message="must be filled")
 	@Size(min=2, max=30, message="must be within {min} and {max} number of characters")
 	private String lastName;
@@ -30,14 +30,14 @@ public class UserDTO {
 	UserDTO(){}
 
 	public UserDTO(
-			String firstName,
+			String name,
 			 String lastName,
 			 String email,
 			 String username,
 			 String password,
 			 String confirmedPassword) {
 		super();
-		this.firstName = firstName;
+		this.name = name;
 		this.lastName = lastName;
 		this.email = email;
 		this.username = username;
@@ -46,12 +46,12 @@ public class UserDTO {
 	
 	}
 
-	public String getFirstName() {
-		return firstName;
+	public String getName() {
+		return name;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getLastName() {
@@ -93,11 +93,5 @@ public class UserDTO {
 	public void setConfirmedPassword(String confirmedPassword) {
 		this.confirmedPassword = confirmedPassword;
 	}
-
-
-	
-	
-	
-	
 
 }

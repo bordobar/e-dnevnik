@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.iktpreobuka.ednevnik.DTO.UserDTO;
 import com.iktpreobuka.ednevnik.entities.UserEntity;
 import com.iktpreobuka.ednevnik.repositories.UserRepository;
 import com.iktpreobuka.ednevnik.util.UserCustomValidator;
@@ -54,6 +55,7 @@ public class UserController {
 		user.setUsername(newUser.getUsername());
 		user.setEmail(newUser.getEmail());
 		user.setPassword(newUser.getPassword());
+		user.setRole(newUser.getRole());
 		
 		userRepository.save(user);
 		
